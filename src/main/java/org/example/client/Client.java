@@ -3,6 +3,7 @@ package org.example.client;
 import com.google.gson.Gson;
 import org.example.Constants;
 import org.example.model.BroadcastMessage;
+import org.example.model.DirectMessage;
 import org.example.model.IdentifyMessage;
 
 import java.io.IOException;
@@ -41,15 +42,36 @@ public class Client {
             String mensaje = scanner.nextLine();
             new Thread(() -> {
                 try {
+                    //broadcast:<MENSJAE>
+                    if(mensaje.startsWith("broadcast:")){
+                        BroadcastMessage message = new BroadcastMessage(
+                                Constants.BROADCAST,
+                                "domic0620",
+                                mensaje.substring(10)
+                        );
+                        String json = gson.toJson(message);
+                        socket.getOutputStream().write(json.getBytes());
+                    }else if(mensaje.startsWith("direct/")){
+                        //direct/<USEERNAME>:<MENSAJE> --> / -> :
+                        String aux = mensaje.replace("/", ":");
+                        //direct:<User>:<Mensaje>
+                        String username = aux.split(":")[1]; // [direct, <User>, <Mensaje>]
+                        //enviar mensaje directo
+                        DirectMessage directMessage = new DirectMessage(
+                                Constants.DIRECT,
+                                me.getItsme(),
+                                aux.split(":")[2],
+                                username
+                        );
+                        socket.getOutputStream().write(gson.toJson(directMessage).getBytes());
+                        System.out.println("DEBUB> "+gson.toJson(directMessage));
+                    }
+
+                    //direct/<USEERNAME>:<MENSAJE>
+
 
                     //Serializar:
-                    BroadcastMessage message = new BroadcastMessage(
-                            Constants.BROADCAST,
-                            "domic0620",
-                            mensaje
-                    );
-                    String json = gson.toJson(message);
-                    socket.getOutputStream().write(json.getBytes());
+
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

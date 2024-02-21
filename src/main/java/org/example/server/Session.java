@@ -2,6 +2,8 @@ package org.example.server;
 
 import com.google.gson.Gson;
 import org.example.Constants;
+import org.example.model.BroadcastMessage;
+import org.example.model.DirectMessage;
 import org.example.model.IdentifyMessage;
 import org.example.model.Type;
 
@@ -32,16 +34,34 @@ public class Session {
 
                     switch (type.getType()){
                         case "broadcast":
-                            Server.sendBroadcast(recibido);
+                            BroadcastMessage broadcastMessage = gson.fromJson(recibido, BroadcastMessage.class);
+                            Server.sendBroadcast(broadcastMessage.getAuthor()+" dice: \n"+broadcastMessage.getMessage());
                             break;
                         case "autoid":
                             //Anunciarlo en tod0 chat
                             IdentifyMessage user = gson.fromJson(recibido, IdentifyMessage.class);
                             Server.sendBroadcast("Se ha conectado " + user.getItsme());
                             //Registrar en hashmap
+                            Server.users.put(user.getItsme(), this);
                             //Miercoles
+
                             break;
                         case "direct":
+                            //{"to":"andres", "type":"direct", "message":"Hola", "author":"domi062'"}
+                            DirectMessage direct = gson.fromJson(recibido, DirectMessage.class);
+                            Session s = Server.users.get(direct.getTo());
+                            if(s != null) {
+                                String finalMessage = direct.getAuthor() + " te dijo directamente: " + direct.getMessage();
+                                s.getSocket().getOutputStream().write(
+                                        finalMessage.getBytes()
+                                );
+                            }else{
+                                //Podriamos decirle al usuario author que el to no existe
+                                socket.getOutputStream().write(
+                                        ("El usuario "+direct.getTo()+" no esta conectado").getBytes()
+                                );
+                            }
+
                             break;
                     }
 

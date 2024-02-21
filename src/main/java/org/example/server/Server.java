@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Server {
 
 
+    //Usado para broadcast
     public static ArrayList<Session> sessions = new ArrayList<>();
+
+    public static HashMap<String, Session> users = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
         //Esperar solicitudes de handshake TCP
